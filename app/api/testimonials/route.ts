@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { eq } from "drizzle-orm"
 import { getDb } from "@/lib/db"
 import { testimonials } from "@/lib/schema"
+import { getTestimonials } from "@/lib/data"
 
 export async function GET() {
-  const db = getDb()
-  if (!db) return NextResponse.json([])
-
-  const rows = await db.select().from(testimonials)
-  return NextResponse.json(rows)
+  const data = await getTestimonials()
+  return NextResponse.json(data)
 }
 
 export async function POST(request: NextRequest) {

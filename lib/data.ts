@@ -1,4 +1,4 @@
-import { eq, isNull } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { getDb } from "./db"
 import * as schema from "./schema"
 import {
@@ -14,7 +14,6 @@ export async function getProducts(): Promise<Product[]> {
     if (!db) return defaultProducts
 
     const rows = await db.select().from(schema.products)
-    if (rows.length === 0) return defaultProducts
 
     return rows.map((r) => ({
       id: r.id,
@@ -37,7 +36,6 @@ export async function getCategories() {
     if (!db) return defaultCategories
 
     const rows = await db.select().from(schema.categories)
-    if (rows.length === 0) return defaultCategories
 
     return rows.map((r) => ({
       id: r.id,
@@ -102,7 +100,6 @@ export async function getTestimonials() {
     if (!db) return defaultTestimonials
 
     const rows = await db.select().from(schema.testimonials)
-    if (rows.length === 0) return defaultTestimonials
 
     return rows.map((r) => ({
       id: r.id,

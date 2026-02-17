@@ -25,8 +25,7 @@ export function AdminSidebar() {
     <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
       <div className="p-6 border-b border-gray-800">
         <Link href="/admin" className="text-xl font-bold">
-          <span className="text-pink-400">Dale</span>
-          <span className="text-green-400">Rosas</span>
+          <span className="text-pink-400">Gardenias</span>
           <span className="text-gray-400 text-sm ml-2">Admin</span>
         </Link>
       </div>

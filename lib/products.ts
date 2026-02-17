@@ -83,12 +83,14 @@ export const categoryGroups: CategoryGroup[] = [
 ]
 
 // Flat categories for backwards compatibility
-export const categories = categoryGroups.flatMap((group) => [
-  { nombre: group.nombre, slug: group.slug, icono: group.icono },
-  ...group.subcategorias.map((sub) => ({
+export const categories = categoryGroups.flatMap((group, gi) => [
+  { id: gi * 100 + 1, nombre: group.nombre, slug: group.slug, icono: group.icono, grupo: null as string | null },
+  ...group.subcategorias.map((sub, si) => ({
+    id: gi * 100 + si + 2,
     nombre: sub.nombre,
     slug: sub.slug,
     icono: group.icono,
+    grupo: group.slug,
   })),
 ])
 

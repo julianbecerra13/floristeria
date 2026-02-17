@@ -1,8 +1,8 @@
-import { products } from "@/lib/products"
+import { type Product } from "@/lib/products"
 import { ProductCard } from "@/components/product-card"
 import { ScrollReveal } from "@/components/scroll-reveal"
 
-export function BestSellers() {
+export function BestSellers({ products }: { products: Product[] }) {
   const bestSellers = products.filter((p) => p.badge === "Más Vendido").slice(0, 4)
 
   // If we don't have enough "Más Vendido" tagged products, fill with first products

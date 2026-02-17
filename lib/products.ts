@@ -9,159 +9,235 @@ export interface Product {
   descripcion: string
 }
 
-export const products: Product[] = [
+export interface CategoryGroup {
+  nombre: string
+  slug: string
+  icono: string
+  subcategorias: { nombre: string; slug: string }[]
+}
+
+export const WHATSAPP_NUMBER = "573157630286"
+export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hola, me interesa un arreglo floral")}`
+
+export const categoryGroups: CategoryGroup[] = [
   {
-    id: 1,
-    nombre: "Ramo de Rosas Rojas x 24",
-    precio: 129900,
-    precioOriginal: 159900,
-    imagen: "/placeholder-roses.jpg",
-    categoria: "rosas",
-    badge: "Más Vendido",
-    descripcion: "Hermoso ramo de 24 rosas rojas premium con follaje decorativo",
+    nombre: "Fechas Especiales",
+    slug: "fechas-especiales",
+    icono: "🎉",
+    subcategorias: [
+      { nombre: "Día de Amor y Amistad", slug: "amor-y-amistad" },
+      { nombre: "Día de la Madre", slug: "dia-madre" },
+      { nombre: "Día de la Mujer", slug: "dia-mujer" },
+      { nombre: "Día del Padre", slug: "dia-padre" },
+      { nombre: "San Valentín", slug: "san-valentin" },
+      { nombre: "Feliz Aniversario", slug: "aniversario" },
+      { nombre: "Cumple Meses", slug: "cumple-meses" },
+      { nombre: "Cumpleaños", slug: "cumpleanos" },
+      { nombre: "Quince Años", slug: "quince-anos" },
+      { nombre: "Grado", slug: "grado" },
+      { nombre: "Para Hombre", slug: "para-hombre" },
+      { nombre: "Ramos Premium", slug: "ramos-premium" },
+      { nombre: "Nacimiento", slug: "nacimiento" },
+      { nombre: "Recuperación", slug: "recuperacion" },
+      { nombre: "Solo Porque Sí", slug: "solo-porque-si" },
+    ],
   },
   {
-    id: 2,
-    nombre: "Girasoles Radiantes x 12",
-    precio: 89900,
-    imagen: "/placeholder-sunflowers.jpg",
-    categoria: "girasoles",
-    descripcion: "Ramo de 12 girasoles frescos que iluminan cualquier espacio",
+    nombre: "Arreglos Florales",
+    slug: "arreglos-florales",
+    icono: "💐",
+    subcategorias: [
+      { nombre: "Arreglos Manuales", slug: "arreglos-manuales" },
+      { nombre: "Arreglos en Caja", slug: "arreglos-en-caja" },
+      { nombre: "Flores y Chocolates", slug: "flores-y-chocolates" },
+      { nombre: "Flores y Licores", slug: "flores-y-licores" },
+      { nombre: "Flores y Globos", slug: "flores-y-globos" },
+      { nombre: "Exóticos", slug: "exoticos" },
+      { nombre: "Cajas Sorpresa", slug: "cajas-sorpresa" },
+    ],
   },
   {
-    id: 3,
-    nombre: "Caja de Rosas Rosadas",
-    precio: 179900,
-    precioOriginal: 219900,
-    imagen: "/placeholder-box-roses.jpg",
-    categoria: "cajas",
-    badge: "20% OFF",
-    descripcion: "Elegante caja con 20 rosas rosadas y decoración premium",
+    nombre: "Arreglos Fúnebres",
+    slug: "arreglos-funebres",
+    icono: "🕊️",
+    subcategorias: [
+      { nombre: "Abanicos", slug: "abanicos" },
+      { nombre: "Cube Cajones", slug: "cube-cajones" },
+      { nombre: "Coronas", slug: "coronas" },
+      { nombre: "Pedestales", slug: "pedestales" },
+      { nombre: "Pequeños", slug: "pequenos" },
+    ],
   },
   {
-    id: 4,
-    nombre: "Bouquet Tropical Paradise",
-    precio: 109900,
-    imagen: "/placeholder-tropical.jpg",
-    categoria: "tropicales",
-    descripcion: "Mezcla exótica de heliconias, aves del paraíso y follaje tropical",
-  },
-  {
-    id: 5,
-    nombre: "Ramo de Lirios Blancos",
-    precio: 99900,
-    imagen: "/placeholder-lilies.jpg",
-    categoria: "lirios",
-    badge: "Nuevo",
-    descripcion: "Elegante ramo de lirios blancos con eucalipto",
-  },
-  {
-    id: 6,
-    nombre: "Rosas Mixtas Arcoíris x 18",
-    precio: 139900,
-    imagen: "/placeholder-rainbow.jpg",
-    categoria: "rosas",
-    descripcion: "18 rosas de colores variados: rojo, rosa, amarillo y blanco",
-  },
-  {
-    id: 7,
-    nombre: "Caja Luxury con Chocolates",
-    precio: 249900,
-    precioOriginal: 289900,
-    imagen: "/placeholder-luxury.jpg",
-    categoria: "cajas",
-    badge: "Premium",
-    descripcion: "Caja de rosas rojas con chocolates Ferrero y tarjeta personalizada",
-  },
-  {
-    id: 8,
-    nombre: "Ramo Silvestre Campestre",
-    precio: 79900,
-    imagen: "/placeholder-wildflowers.jpg",
-    categoria: "ramos",
-    descripcion: "Ramo natural con margaritas, claveles y flores silvestres",
-  },
-  {
-    id: 9,
-    nombre: "Girasoles con Rosas x 6",
-    precio: 119900,
-    precioOriginal: 139900,
-    imagen: "/placeholder-sun-roses.jpg",
-    categoria: "girasoles",
-    badge: "Popular",
-    descripcion: "Combinación perfecta de 6 girasoles con rosas rojas",
-  },
-  {
-    id: 10,
-    nombre: "Orquídea Phalaenopsis",
-    precio: 159900,
-    imagen: "/placeholder-orchid.jpg",
-    categoria: "tropicales",
-    descripcion: "Orquídea premium en matera decorativa, dura semanas",
-  },
-  {
-    id: 11,
-    nombre: "Ramo Romántico Deluxe",
-    precio: 189900,
-    precioOriginal: 229900,
-    imagen: "/placeholder-romantic.jpg",
-    categoria: "ramos",
-    badge: "Más Vendido",
-    descripcion: "50 rosas rojas con gypsophila y envoltura premium",
-  },
-  {
-    id: 12,
-    nombre: "Mini Ramo de Tulipanes",
-    precio: 69900,
-    imagen: "/placeholder-tulips.jpg",
-    categoria: "ramos",
-    descripcion: "Delicado ramo de 10 tulipanes holandeses de colores",
-  },
-  {
-    id: 13,
-    nombre: "Caja Corazón de Rosas",
-    precio: 199900,
-    imagen: "/placeholder-heart.jpg",
-    categoria: "cajas",
-    badge: "Edición Especial",
-    descripcion: "Caja en forma de corazón con 30 rosas rojas",
-  },
-  {
-    id: 14,
-    nombre: "Lirios y Astromelias",
-    precio: 94900,
-    precioOriginal: 114900,
-    imagen: "/placeholder-mixed.jpg",
-    categoria: "lirios",
-    descripcion: "Arreglo mixto de lirios orientales y astromelias coloridas",
-  },
-  {
-    id: 15,
-    nombre: "Rosas Blancas Elegance x 24",
-    precio: 134900,
-    imagen: "/placeholder-white-roses.jpg",
-    categoria: "rosas",
-    descripcion: "24 rosas blancas con follaje verde y lazo de satín",
-  },
-  {
-    id: 16,
-    nombre: "Arreglo Tropical Exótico",
-    precio: 144900,
-    precioOriginal: 174900,
-    imagen: "/placeholder-exotic.jpg",
-    categoria: "tropicales",
-    badge: "15% OFF",
-    descripcion: "Heliconia, ginger, ave del paraíso en base de cerámica",
+    nombre: "Adicionales",
+    slug: "adicionales",
+    icono: "🎁",
+    subcategorias: [
+      { nombre: "Peluches", slug: "peluches" },
+      { nombre: "Chocolates", slug: "chocolates" },
+      { nombre: "Licores", slug: "licores" },
+      { nombre: "Globos", slug: "globos" },
+      { nombre: "Tarjetas", slug: "tarjetas" },
+    ],
   },
 ]
 
-export const categories = [
-  { nombre: "Rosas", slug: "rosas", icono: "🌹" },
-  { nombre: "Girasoles", slug: "girasoles", icono: "🌻" },
-  { nombre: "Tropicales", slug: "tropicales", icono: "🌺" },
-  { nombre: "Lirios", slug: "lirios", icono: "🪷" },
-  { nombre: "Cajas", slug: "cajas", icono: "🎁" },
-  { nombre: "Ramos", slug: "ramos", icono: "💐" },
+// Flat categories for backwards compatibility
+export const categories = categoryGroups.flatMap((group) => [
+  { nombre: group.nombre, slug: group.slug, icono: group.icono },
+  ...group.subcategorias.map((sub) => ({
+    nombre: sub.nombre,
+    slug: sub.slug,
+    icono: group.icono,
+  })),
+])
+
+export const products: Product[] = [
+  // Fechas Especiales
+  {
+    id: 1,
+    nombre: "Ramo Día de la Madre Premium",
+    precio: 149900,
+    precioOriginal: 189900,
+    imagen: "/placeholder-roses.jpg",
+    categoria: "dia-madre",
+    badge: "Más Vendido",
+    descripcion: "Hermoso ramo de rosas y lirios para mamá con envoltura premium",
+  },
+  {
+    id: 2,
+    nombre: "Ramo San Valentín Rosas Rojas x 24",
+    precio: 139900,
+    imagen: "/placeholder-valentine.jpg",
+    categoria: "san-valentin",
+    badge: "Popular",
+    descripcion: "24 rosas rojas con gypsophila, el regalo perfecto para el amor",
+  },
+  {
+    id: 3,
+    nombre: "Arreglo Feliz Aniversario",
+    precio: 119900,
+    imagen: "/placeholder-anniversary.jpg",
+    categoria: "aniversario",
+    descripcion: "Arreglo mixto de rosas y astromelias para celebrar el amor",
+  },
+  {
+    id: 4,
+    nombre: "Bouquet Cumpleaños Colorido",
+    precio: 99900,
+    precioOriginal: 129900,
+    imagen: "/placeholder-birthday.jpg",
+    categoria: "cumpleanos",
+    badge: "20% OFF",
+    descripcion: "Ramo vibrante de flores mixtas para celebrar un cumpleaños especial",
+  },
+  // Arreglos Florales
+  {
+    id: 5,
+    nombre: "Arreglo Manual Rosas y Girasoles",
+    precio: 129900,
+    imagen: "/placeholder-manual.jpg",
+    categoria: "arreglos-manuales",
+    badge: "Nuevo",
+    descripcion: "Arreglo artesanal con rosas, girasoles y follaje verde",
+  },
+  {
+    id: 6,
+    nombre: "Caja de Rosas Rosadas Premium",
+    precio: 179900,
+    precioOriginal: 219900,
+    imagen: "/placeholder-box-roses.jpg",
+    categoria: "arreglos-en-caja",
+    badge: "Premium",
+    descripcion: "Elegante caja con 20 rosas rosadas y decoración especial",
+  },
+  {
+    id: 7,
+    nombre: "Rosas con Chocolates Ferrero",
+    precio: 199900,
+    imagen: "/placeholder-choco.jpg",
+    categoria: "flores-y-chocolates",
+    badge: "Más Vendido",
+    descripcion: "12 rosas rojas acompañadas de caja de chocolates Ferrero Rocher",
+  },
+  {
+    id: 8,
+    nombre: "Rosas con Vino Tinto",
+    precio: 229900,
+    precioOriginal: 269900,
+    imagen: "/placeholder-wine.jpg",
+    categoria: "flores-y-licores",
+    descripcion: "Ramo de rosas con botella de vino tinto premium y tarjeta",
+  },
+  {
+    id: 9,
+    nombre: "Ramo con Globos de Helio",
+    precio: 159900,
+    imagen: "/placeholder-balloons.jpg",
+    categoria: "flores-y-globos",
+    descripcion: "Ramo de flores mixtas con 3 globos de helio personalizados",
+  },
+  {
+    id: 10,
+    nombre: "Arreglo Exótico Tropical",
+    precio: 169900,
+    precioOriginal: 199900,
+    imagen: "/placeholder-exotic.jpg",
+    categoria: "exoticos",
+    badge: "15% OFF",
+    descripcion: "Heliconias, aves del paraíso y ginger en base de cerámica",
+  },
+  {
+    id: 11,
+    nombre: "Caja Sorpresa Romántica",
+    precio: 249900,
+    imagen: "/placeholder-surprise.jpg",
+    categoria: "cajas-sorpresa",
+    badge: "Edición Especial",
+    descripcion: "Caja sorpresa con rosas, chocolates, peluche y tarjeta personalizada",
+  },
+  // Arreglos Fúnebres
+  {
+    id: 12,
+    nombre: "Corona Fúnebre Clásica",
+    precio: 189900,
+    imagen: "/placeholder-corona.jpg",
+    categoria: "coronas",
+    descripcion: "Corona de flores blancas y follaje con cinta personalizada",
+  },
+  {
+    id: 13,
+    nombre: "Pedestal de Condolencias",
+    precio: 259900,
+    imagen: "/placeholder-pedestal.jpg",
+    categoria: "pedestales",
+    descripcion: "Arreglo pedestal con rosas blancas, lirios y claveles",
+  },
+  // Adicionales
+  {
+    id: 14,
+    nombre: "Peluche Osito con Corazón",
+    precio: 49900,
+    imagen: "/placeholder-teddy.jpg",
+    categoria: "peluches",
+    descripcion: "Tierno osito de peluche con corazón, ideal para acompañar tus flores",
+  },
+  {
+    id: 15,
+    nombre: "Caja de Chocolates Premium",
+    precio: 59900,
+    imagen: "/placeholder-chocolates.jpg",
+    categoria: "chocolates",
+    descripcion: "Caja de chocolates finos importados, complemento perfecto",
+  },
+  {
+    id: 16,
+    nombre: "Globos Personalizados x 3",
+    precio: 39900,
+    imagen: "/placeholder-globos.jpg",
+    categoria: "globos",
+    descripcion: "3 globos de helio con mensaje personalizado para cualquier ocasión",
+  },
 ]
 
 export const testimonials = [
@@ -192,4 +268,14 @@ export function formatPrice(precio: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(precio)
+}
+
+export function getCategoryEmoji(categoria: string): string {
+  for (const group of categoryGroups) {
+    if (group.slug === categoria) return group.icono
+    for (const sub of group.subcategorias) {
+      if (sub.slug === categoria) return group.icono
+    }
+  }
+  return "💐"
 }

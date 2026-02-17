@@ -1,8 +1,8 @@
-import { products } from "@/lib/products"
+import { type Product } from "@/lib/products"
 import { ProductCard } from "@/components/product-card"
 import { ScrollReveal } from "@/components/scroll-reveal"
 
-export function ProductGrid() {
+export function ProductGrid({ products }: { products: Product[] }) {
   return (
     <section id="catalogo" className="py-16 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator"
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer id="contacto" className="bg-gray-900 text-gray-300">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
@@ -24,7 +24,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-pink-400" />
-                +57 300 123 4567
+                +57 315 763 0286
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-pink-400" />

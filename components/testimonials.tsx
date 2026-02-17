@@ -1,9 +1,15 @@
 import { Star } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { testimonials } from "@/lib/products"
 import { ScrollReveal } from "@/components/scroll-reveal"
 
-export function Testimonials() {
+interface Testimonial {
+  id: number
+  nombre: string
+  texto: string
+  estrellas: number
+}
+
+export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   return (
     <section id="testimonios" className="py-16 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

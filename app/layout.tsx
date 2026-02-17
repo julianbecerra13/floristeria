@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DaleRosas - Envío de Flores a Domicilio en Colombia",
+  title: "Floristeria Gardenias - Envío de Flores a Domicilio en Colombia",
   description:
     "La mejor floristería online de Colombia. Rosas, girasoles, arreglos florales y más. Envío a domicilio el mismo día en Bogotá.",
 };

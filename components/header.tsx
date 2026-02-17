@@ -33,7 +33,7 @@ export function Header() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 overflow-y-auto">
-            <SheetTitle className="text-xl font-bold text-pink-600">DaleRosas</SheetTitle>
+            <SheetTitle className="text-xl font-bold text-pink-600">Floristeria Gardenias</SheetTitle>
             <nav className="mt-6 flex flex-col gap-2">
               <a
                 href="/"
@@ -83,8 +83,8 @@ export function Header() {
 
         {/* Logo */}
         <a href="/" className="flex items-center gap-1">
-          <span className="text-2xl font-bold text-pink-600">Dale</span>
-          <span className="text-2xl font-bold text-green-700">Rosas</span>
+          <span className="text-2xl font-bold text-pink-600">Floristeria</span>
+          <span className="text-2xl font-bold text-green-700"> Gardenias</span>
         </a>
 
         {/* Desktop nav */}

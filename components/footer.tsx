@@ -9,8 +9,8 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-1 mb-4">
-              <span className="text-2xl font-bold text-pink-400">Dale</span>
-              <span className="text-2xl font-bold text-green-400">Rosas</span>
+              <span className="text-2xl font-bold text-pink-400">Floristeria</span>
+              <span className="text-2xl font-bold text-green-400"> Gardenias</span>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
               La mejor floristería online de Colombia. Envío de flores a domicilio
@@ -28,7 +28,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-pink-400" />
-                info@dalerosas.com
+                floristeria.gardenias10@gmail.com
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-pink-400" />
@@ -74,7 +74,7 @@ export function Footer() {
         <Separator className="my-8 bg-gray-800" />
 
         <p className="text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} DaleRosas. Todos los derechos reservados.
+          &copy; {new Date().getFullYear()} Floristeria Gardenias. Todos los derechos reservados.
         </p>
       </div>
     </footer>

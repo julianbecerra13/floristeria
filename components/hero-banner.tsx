@@ -81,7 +81,7 @@ export function HeroBanner({ content }: { content?: HeroContent | null }) {
               <div className="hidden lg:block relative w-80 h-80 xl:w-96 xl:h-96 rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src={image}
-                  alt="Flores DaleRosas"
+                  alt="Flores Floristeria Gardenias"
                   fill
                   className="object-cover"
                   priority

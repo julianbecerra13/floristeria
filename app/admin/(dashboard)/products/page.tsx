@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Pencil, Trash2, X, Search } from "lucide-react"
+import { Plus, Pencil, Trash2, X, Search, Loader2, AlertTriangle, CheckCircle2, Package } from "lucide-react"
 
 interface Product {
   id: number
@@ -32,20 +31,42 @@ const fmt = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(n)
 
 export default function ProductsPage() {
-  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [editing, setEditing] = useState<Product | null>(null)
   const [isNew, setIsNew] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState("")
+  const [initialLoading, setInitialLoading] = useState(true)
 
-  const load = () => {
-    fetch("/api/products").then((r) => r.json()).then(setProducts)
-    fetch("/api/categories").then((r) => r.json()).then(setCategories)
+  // Confirm delete modal
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  // Toast
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }
 
-  useEffect(() => { load() }, [])
+  const load = useCallback(async () => {
+    try {
+      const [pRes, cRes] = await Promise.all([
+        fetch("/api/products"),
+        fetch("/api/categories"),
+      ])
+      setProducts(await pRes.json())
+      setCategories(await cRes.json())
+    } catch {
+      showToast("Error al cargar datos", "error")
+    } finally {
+      setInitialLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { load() }, [load])
 
   const groups = categories.filter((c) => c.grupo === null)
   const getSubcats = (slug: string) => categories.filter((c) => c.grupo === slug)
@@ -70,32 +91,72 @@ export default function ProductsPage() {
 
   const save = async () => {
     if (!editing) return
-    setLoading(true)
-    await fetch("/api/products", {
-      method: isNew ? "POST" : "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editing),
-    })
-    setLoading(false)
-    close()
-    load()
+    setSaving(true)
+    try {
+      const res = await fetch("/api/products", {
+        method: isNew ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editing),
+      })
+      if (!res.ok) throw new Error()
+      showToast(isNew ? "Producto creado" : "Producto actualizado")
+      close()
+      load()
+    } catch {
+      showToast("Error al guardar producto", "error")
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const remove = async (id: number) => {
-    if (!confirm("¿Eliminar este producto?")) return
-    await fetch(`/api/products/${id}`, { method: "DELETE" })
-    load()
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/products/${deleteTarget.id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error()
+      showToast("Producto eliminado")
+      setDeleteTarget(null)
+      load()
+    } catch {
+      showToast("Error al eliminar", "error")
+    } finally {
+      setDeleting(false)
+    }
   }
+
+  // Skeleton rows for loading
+  const SkeletonRow = () => (
+    <tr className="animate-pulse">
+      <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-3/4" /></td>
+      <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+      <td className="px-4 py-3 hidden md:table-cell"><div className="h-4 bg-gray-200 rounded w-24" /></td>
+      <td className="px-4 py-3 hidden sm:table-cell"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+      <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-12 ml-auto" /></td>
+    </tr>
+  )
 
   return (
     <div>
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-[60] flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all animate-in slide-in-from-top-2 ${
+          toast.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"
+        }`}>
+          {toast.type === "success" ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold">Productos</h1>
-          <p className="text-sm text-gray-500">{products.length} productos</p>
+          <p className="text-sm text-gray-500">
+            {initialLoading ? "Cargando..." : `${products.length} productos`}
+          </p>
         </div>
-        <Button size="sm" onClick={openNew}>
+        <Button size="sm" onClick={openNew} disabled={initialLoading}>
           <Plus className="h-4 w-4 mr-1" /> Nuevo
         </Button>
       </div>
@@ -124,47 +185,68 @@ export default function ProductsPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {filtered.map((p) => (
-              <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-2.5">
-                  <p className="font-medium text-gray-900 truncate max-w-xs">{p.nombre}</p>
-                  <p className="text-xs text-gray-400 truncate max-w-xs md:hidden">{getCatName(p.categoria)}</p>
-                </td>
-                <td className="px-4 py-2.5">
-                  <span className="font-semibold text-gray-900">{fmt(p.precio)}</span>
-                  {p.precioOriginal && (
-                    <span className="block text-xs text-gray-400 line-through">{fmt(p.precioOriginal)}</span>
+            {initialLoading ? (
+              <>
+                <SkeletonRow />
+                <SkeletonRow />
+                <SkeletonRow />
+                <SkeletonRow />
+                <SkeletonRow />
+              </>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-12 text-center">
+                  <Package className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-400 font-medium">
+                    {search ? "No se encontraron productos" : "No hay productos aún"}
+                  </p>
+                  {!search && (
+                    <Button size="sm" variant="outline" className="mt-3" onClick={openNew}>
+                      <Plus className="h-4 w-4 mr-1" /> Crear primer producto
+                    </Button>
                   )}
                 </td>
-                <td className="px-4 py-2.5 hidden md:table-cell">
-                  <span className="text-gray-600 text-xs">{getCatName(p.categoria)}</span>
-                </td>
-                <td className="px-4 py-2.5 hidden sm:table-cell">
-                  {p.badge && <Badge variant="secondary" className="text-xs">{p.badge}</Badge>}
-                </td>
-                <td className="px-4 py-2.5 text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}>
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => remove(p.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </td>
               </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No se encontraron productos</td></tr>
+            ) : (
+              filtered.map((p) => (
+                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-2.5">
+                    <p className="font-medium text-gray-900 truncate max-w-xs">{p.nombre}</p>
+                    <p className="text-xs text-gray-400 truncate max-w-xs md:hidden">{getCatName(p.categoria)}</p>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className="font-semibold text-gray-900">{fmt(p.precio)}</span>
+                    {p.precioOriginal && (
+                      <span className="block text-xs text-gray-400 line-through">{fmt(p.precioOriginal)}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5 hidden md:table-cell">
+                    <span className="text-gray-600 text-xs">{getCatName(p.categoria)}</span>
+                  </td>
+                  <td className="px-4 py-2.5 hidden sm:table-cell">
+                    {p.badge && <Badge variant="secondary" className="text-xs">{p.badge}</Badge>}
+                  </td>
+                  <td className="px-4 py-2.5 text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => setDeleteTarget(p)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Modal */}
+      {/* Edit/Create Modal */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={close}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 fade-in duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <h2 className="font-bold text-lg">{isNew ? "Nuevo Producto" : "Editar Producto"}</h2>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={close}>
@@ -219,9 +301,36 @@ export default function ProductsPage() {
               </div>
             </div>
             <div className="flex justify-end gap-2 px-5 py-4 border-t bg-gray-50 rounded-b-xl">
-              <Button variant="outline" size="sm" onClick={close}>Cancelar</Button>
-              <Button size="sm" onClick={save} disabled={loading || !editing.nombre || !editing.categoria}>
-                {loading ? "Guardando..." : isNew ? "Crear" : "Guardar"}
+              <Button variant="outline" size="sm" onClick={close} disabled={saving}>Cancelar</Button>
+              <Button size="sm" onClick={save} disabled={saving || !editing.nombre || !editing.categoria}>
+                {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                {saving ? "Guardando..." : isNew ? "Crear" : "Guardar"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => !deleting && setDeleteTarget(null)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 animate-in zoom-in-95 fade-in duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Eliminar producto</h3>
+              <p className="text-sm text-gray-500">
+                ¿Estás seguro de eliminar <strong>{deleteTarget.nombre}</strong>? Esta acción no se puede deshacer.
+              </p>
+            </div>
+            <div className="flex gap-2 px-6 pb-6">
+              <Button variant="outline" className="flex-1" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={confirmDelete} disabled={deleting}>
+                {deleting && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                {deleting ? "Eliminando..." : "Eliminar"}
               </Button>
             </div>
           </div>

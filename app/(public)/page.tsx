@@ -5,6 +5,7 @@ import { CategorySection } from "@/components/category-section"
 import { ProductGrid } from "@/components/product-grid"
 import { BestSellers } from "@/components/best-sellers"
 import { Testimonials } from "@/components/testimonials"
+import { LocationSection } from "@/components/location-section"
 import { getProducts, getTestimonials, getPageContent } from "@/lib/data"
 import { categoryGroups } from "@/lib/products"
 
@@ -21,6 +22,7 @@ export default async function Home() {
       <CategorySection categoryGroups={categoryGroups} />
       <BestSellers products={products} />
       <ProductGrid products={products} />
+      <LocationSection />
       <Testimonials testimonials={testimonials} />
     </main>
   )

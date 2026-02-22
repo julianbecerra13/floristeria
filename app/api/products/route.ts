@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { eq } from "drizzle-orm"
+import { eq, inArray } from "drizzle-orm"
 import { getDb } from "@/lib/db"
 import { products } from "@/lib/schema"
 import { getProducts } from "@/lib/data"
@@ -46,4 +46,16 @@ export async function PUT(request: NextRequest) {
     .returning()
 
   return NextResponse.json(row)
+}
+
+export async function DELETE(request: NextRequest) {
+  const db = getDb()
+  if (!db) return NextResponse.json({ error: "DB no configurada" }, { status: 500 })
+
+  const body = await request.json()
+  const ids: number[] = body.ids
+  if (!ids || ids.length === 0) return NextResponse.json({ error: "No se enviaron IDs" }, { status: 400 })
+
+  await db.delete(products).where(inArray(products.id, ids))
+  return NextResponse.json({ ok: true, deleted: ids.length })
 }

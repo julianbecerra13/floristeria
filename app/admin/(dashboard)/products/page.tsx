@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Pencil, Trash2, X, Search, Loader2, AlertTriangle, CheckCircle2, Package } from "lucide-react"
+import { ImageUpload } from "@/components/admin/image-upload"
 
 interface Product {
   id: number
@@ -39,8 +40,12 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("")
   const [initialLoading, setInitialLoading] = useState(true)
 
+  // Selection
+  const [selected, setSelected] = useState<Set<number>>(new Set())
+
   // Confirm delete modal
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [deleteBulk, setDeleteBulk] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   // Toast
@@ -77,6 +82,27 @@ export default function ProductsPage() {
     p.categoria.toLowerCase().includes(search.toLowerCase())
   )
 
+  // Selection helpers
+  const toggleSelect = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selected.size === filtered.length) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(filtered.map((p) => p.id)))
+    }
+  }
+
+  const allSelected = filtered.length > 0 && selected.size === filtered.length
+  const someSelected = selected.size > 0
+
   const openNew = () => {
     setEditing({ id: 0, nombre: "", precio: 0, imagen: "/placeholder.jpg", categoria: "", descripcion: "" })
     setIsNew(true)
@@ -109,6 +135,7 @@ export default function ProductsPage() {
     }
   }
 
+  // Delete single
   const confirmDelete = async () => {
     if (!deleteTarget) return
     setDeleting(true)
@@ -117,6 +144,7 @@ export default function ProductsPage() {
       if (!res.ok) throw new Error()
       showToast("Producto eliminado")
       setDeleteTarget(null)
+      setSelected((prev) => { const next = new Set(prev); next.delete(deleteTarget.id); return next })
       load()
     } catch {
       showToast("Error al eliminar", "error")
@@ -125,9 +153,32 @@ export default function ProductsPage() {
     }
   }
 
+  // Delete bulk
+  const confirmBulkDelete = async () => {
+    setDeleting(true)
+    try {
+      const ids = Array.from(selected)
+      const res = await fetch("/api/products", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      })
+      if (!res.ok) throw new Error()
+      showToast(`${ids.length} producto${ids.length > 1 ? "s" : ""} eliminado${ids.length > 1 ? "s" : ""}`)
+      setSelected(new Set())
+      setDeleteBulk(false)
+      load()
+    } catch {
+      showToast("Error al eliminar productos", "error")
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   // Skeleton rows for loading
   const SkeletonRow = () => (
     <tr className="animate-pulse">
+      <td className="px-4 py-3 w-10"><div className="h-4 w-4 bg-gray-200 rounded" /></td>
       <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-3/4" /></td>
       <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-16" /></td>
       <td className="px-4 py-3 hidden md:table-cell"><div className="h-4 bg-gray-200 rounded w-24" /></td>
@@ -156,9 +207,36 @@ export default function ProductsPage() {
             {initialLoading ? "Cargando..." : `${products.length} productos`}
           </p>
         </div>
-        <Button size="sm" onClick={openNew} disabled={initialLoading}>
-          <Plus className="h-4 w-4 mr-1" /> Nuevo
-        </Button>
+        <div className="flex items-center gap-2">
+          {someSelected && (
+            <>
+              {selected.size === 1 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const p = products.find((p) => p.id === Array.from(selected)[0])
+                    if (p) openEdit(p)
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Editar
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setDeleteBulk(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Eliminar ({selected.size})
+              </Button>
+            </>
+          )}
+          <Button size="sm" onClick={openNew} disabled={initialLoading}>
+            <Plus className="h-4 w-4 mr-1" /> Nuevo
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -172,11 +250,32 @@ export default function ProductsPage() {
         />
       </div>
 
+      {/* Selection bar */}
+      {someSelected && (
+        <div className="flex items-center gap-3 mb-3 px-3 py-2 bg-pink-50 border border-pink-200 rounded-lg text-sm">
+          <span className="font-medium text-pink-800">
+            {selected.size} producto{selected.size > 1 ? "s" : ""} seleccionado{selected.size > 1 ? "s" : ""}
+          </span>
+          <button onClick={() => setSelected(new Set())} className="text-pink-600 hover:text-pink-800 underline text-xs">
+            Deseleccionar todo
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white rounded-lg border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-2.5 w-10">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  disabled={initialLoading || filtered.length === 0}
+                  className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                />
+              </th>
               <th className="px-4 py-2.5">Producto</th>
               <th className="px-4 py-2.5 w-28">Precio</th>
               <th className="px-4 py-2.5 w-40 hidden md:table-cell">Categoría</th>
@@ -195,7 +294,7 @@ export default function ProductsPage() {
               </>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center">
+                <td colSpan={6} className="px-4 py-12 text-center">
                   <Package className="h-10 w-10 text-gray-300 mx-auto mb-2" />
                   <p className="text-gray-400 font-medium">
                     {search ? "No se encontraron productos" : "No hay productos aún"}
@@ -209,7 +308,18 @@ export default function ProductsPage() {
               </tr>
             ) : (
               filtered.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={p.id}
+                  className={`transition-colors ${selected.has(p.id) ? "bg-pink-50/60" : "hover:bg-gray-50"}`}
+                >
+                  <td className="px-4 py-2.5">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(p.id)}
+                      onChange={() => toggleSelect(p.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-4 py-2.5">
                     <p className="font-medium text-gray-900 truncate max-w-xs">{p.nombre}</p>
                     <p className="text-xs text-gray-400 truncate max-w-xs md:hidden">{getCatName(p.categoria)}</p>
@@ -227,14 +337,16 @@ export default function ProductsPage() {
                     {p.badge && <Badge variant="secondary" className="text-xs">{p.badge}</Badge>}
                   </td>
                   <td className="px-4 py-2.5 text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => setDeleteTarget(p)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                    {!someSelected && (
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => setDeleteTarget(p)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))
@@ -292,8 +404,11 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div>
-                <Label className="text-xs">Imagen URL</Label>
-                <Input value={editing.imagen} onChange={(e) => setEditing({ ...editing, imagen: e.target.value })} className="h-9" />
+                <Label className="text-xs">Imagen del producto</Label>
+                <ImageUpload
+                  value={editing.imagen}
+                  onChange={(url) => setEditing({ ...editing, imagen: url })}
+                />
               </div>
               <div>
                 <Label className="text-xs">Descripción</Label>
@@ -311,7 +426,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Single Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => !deleting && setDeleteTarget(null)}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 animate-in zoom-in-95 fade-in duration-200" onClick={(e) => e.stopPropagation()}>
@@ -331,6 +446,32 @@ export default function ProductsPage() {
               <Button variant="destructive" className="flex-1" onClick={confirmDelete} disabled={deleting}>
                 {deleting && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
                 {deleting ? "Eliminando..." : "Eliminar"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Bulk Confirmation Modal */}
+      {deleteBulk && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => !deleting && setDeleteBulk(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 animate-in zoom-in-95 fade-in duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Eliminar productos</h3>
+              <p className="text-sm text-gray-500">
+                ¿Estás seguro de eliminar <strong>{selected.size} producto{selected.size > 1 ? "s" : ""}</strong>? Esta acción no se puede deshacer.
+              </p>
+            </div>
+            <div className="flex gap-2 px-6 pb-6">
+              <Button variant="outline" className="flex-1" onClick={() => setDeleteBulk(false)} disabled={deleting}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={confirmBulkDelete} disabled={deleting}>
+                {deleting && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                {deleting ? "Eliminando..." : `Eliminar (${selected.size})`}
               </Button>
             </div>
           </div>

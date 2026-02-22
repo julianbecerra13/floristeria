@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import { MessageCircle } from "lucide-react"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,14 +13,28 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola, me interesa: ${product.nombre} - ${formatPrice(product.precio)}`)}`
+  const [imgError, setImgError] = useState(false)
+
+  const hasRealImage =
+    product.imagen &&
+    !product.imagen.includes("placeholder") &&
+    product.imagen.startsWith("http")
 
   return (
     <Card className="group overflow-hidden py-0 gap-0 transition-all hover:shadow-lg">
-      {/* Image placeholder */}
       <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-pink-100 to-rose-50">
-        <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-60">
-          {getCategoryEmoji(product.categoria)}
-        </div>
+        {hasRealImage && !imgError ? (
+          <img
+            src={product.imagen}
+            alt={product.nombre}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-60">
+            {getCategoryEmoji(product.categoria)}
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         {product.badge && (
           <Badge className="absolute top-3 left-3 bg-pink-600 hover:bg-pink-600 text-white text-xs">

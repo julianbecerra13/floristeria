@@ -66,7 +66,7 @@ export function Footer() {
               </a>
             </div>
             <p className="mt-4 text-sm text-gray-400">
-              Bogotá, Colombia
+              Piedecuesta, Santander - Colombia
             </p>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { ImageUpload } from "@/components/admin/image-upload"
 
 interface ProductFormProps {
   product?: {
@@ -32,6 +33,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
+  const [imagen, setImagen] = useState(product?.imagen ?? "")
 
   useEffect(() => {
     fetch("/api/categories")
@@ -54,7 +56,7 @@ export function ProductForm({ product }: ProductFormProps) {
       precioOriginal: formData.get("precioOriginal")
         ? parseInt(formData.get("precioOriginal") as string)
         : null,
-      imagen: formData.get("imagen"),
+      imagen,
       categoria: formData.get("categoria"),
       badge: formData.get("badge") || null,
       descripcion: formData.get("descripcion"),
@@ -90,8 +92,8 @@ export function ProductForm({ product }: ProductFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="imagen">URL Imagen</Label>
-        <Input id="imagen" name="imagen" defaultValue={product?.imagen} required />
+        <Label>Imagen del producto</Label>
+        <ImageUpload value={imagen} onChange={setImagen} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -128,7 +130,7 @@ export function ProductForm({ product }: ProductFormProps) {
       </div>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading || !imagen}>
           {loading ? "Guardando..." : product ? "Actualizar" : "Crear"}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>

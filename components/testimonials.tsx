@@ -19,7 +19,7 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
             <p className="mt-2 text-gray-600">Miles de personas confian en nosotros</p>
           </div>
         </ScrollReveal>
-        <div className="grid sm:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, index) => (
             <ScrollReveal key={t.id} animation="fade-up" delay={index * 200}>
               <Card className="bg-white">

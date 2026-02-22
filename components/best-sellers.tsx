@@ -22,13 +22,21 @@ export function BestSellers({ products }: { products: Product[] }) {
             <p className="mt-2 text-gray-600">Los favoritos de nuestros clientes</p>
           </div>
         </ScrollReveal>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {displayed.map((product, index) => (
-            <ScrollReveal key={product.id} animation="fade-up" delay={index * 150}>
-              <ProductCard product={product} />
-            </ScrollReveal>
-          ))}
-        </div>
+        {displayed.length > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {displayed.map((product, index) => (
+              <ScrollReveal key={product.id} animation="fade-up" delay={index * 150}>
+                <ProductCard product={product} />
+              </ScrollReveal>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-pink-50/50 rounded-2xl border border-dashed border-pink-200">
+            <span className="text-5xl mb-4 block">💐</span>
+            <p className="text-gray-500 font-medium">Pronto tendremos nuestros productos más vendidos</p>
+            <p className="text-sm text-gray-400 mt-1">Estamos preparando algo especial para ti</p>
+          </div>
+        )}
       </div>
     </section>
   )

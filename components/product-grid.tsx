@@ -12,13 +12,29 @@ export function ProductGrid({ products }: { products: Product[] }) {
             <p className="mt-2 text-gray-600">Las flores mas frescas y hermosas, directo a tu puerta</p>
           </div>
         </ScrollReveal>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {products.map((product, index) => (
-            <ScrollReveal key={product.id} animation="fade-up" delay={(index % 4) * 100}>
-              <ProductCard product={product} />
-            </ScrollReveal>
-          ))}
-        </div>
+        {products.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {products.map((product, index) => (
+              <ScrollReveal key={product.id} animation="fade-up" delay={(index % 4) * 100}>
+                <ProductCard product={product} />
+              </ScrollReveal>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
+            <span className="text-5xl mb-4 block">🌸</span>
+            <p className="text-gray-500 font-medium">Estamos actualizando nuestro catálogo</p>
+            <p className="text-sm text-gray-400 mt-1">Muy pronto podrás ver todas nuestras flores y arreglos</p>
+            <a
+              href="https://wa.me/573157630286?text=Hola, me gustaría conocer los productos disponibles"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 mt-4 rounded-full bg-green-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+            >
+              Consultar por WhatsApp
+            </a>
+          </div>
+        )}
       </div>
     </section>
   )

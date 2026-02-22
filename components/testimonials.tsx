@@ -19,6 +19,13 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
             <p className="mt-2 text-gray-600">Miles de personas confian en nosotros</p>
           </div>
         </ScrollReveal>
+        {testimonials.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
+            <span className="text-5xl mb-4 block">⭐</span>
+            <p className="text-gray-500 font-medium">Pronto verás las opiniones de nuestros clientes</p>
+            <p className="text-sm text-gray-400 mt-1">Tu experiencia es lo más importante para nosotros</p>
+          </div>
+        ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, index) => (
             <ScrollReveal key={t.id} animation="fade-up" delay={index * 200}>
@@ -45,6 +52,7 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
             </ScrollReveal>
           ))}
         </div>
+        )}
       </div>
     </section>
   )

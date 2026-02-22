@@ -1,4 +1,4 @@
-import { Phone, Mail, Clock, Instagram, Facebook } from "lucide-react"
+import { Phone, Mail, Clock, Facebook } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
 export function Footer() {
@@ -53,14 +53,10 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4">Síguenos</h3>
             <div className="flex gap-3">
               <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 hover:bg-pink-600 transition-colors"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 hover:bg-pink-600 transition-colors"
+                href="https://www.facebook.com/FloristeriaGardenias/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 hover:bg-blue-600 transition-colors"
               >
                 <Facebook className="h-5 w-5" />
               </a>

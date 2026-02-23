@@ -8,6 +8,32 @@ import {
   type Product,
 } from "./products"
 
+export async function getProductById(id: number): Promise<Product | null> {
+  try {
+    const db = getDb()
+    if (!db) {
+      return defaultProducts.find((p) => p.id === id) ?? null
+    }
+
+    const rows = await db.select().from(schema.products).where(eq(schema.products.id, id))
+    const r = rows[0]
+    if (!r) return null
+
+    return {
+      id: r.id,
+      nombre: r.nombre,
+      precio: r.precio,
+      precioOriginal: r.precioOriginal ?? undefined,
+      imagen: r.imagen,
+      categoria: r.categoria,
+      badge: r.badge ?? undefined,
+      descripcion: r.descripcion,
+    }
+  } catch {
+    return defaultProducts.find((p) => p.id === id) ?? null
+  }
+}
+
 export async function getProducts(): Promise<Product[]> {
   try {
     const db = getDb()

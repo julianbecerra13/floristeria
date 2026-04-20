@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ImageUpload } from "@/components/admin/image-upload"
+import { CategoriesMultiselect } from "@/components/admin/categories-multiselect"
+import { parseCategorias } from "@/lib/products"
 
 interface ProductFormProps {
   product?: {
@@ -34,6 +36,8 @@ export function ProductForm({ product }: ProductFormProps) {
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [imagen, setImagen] = useState(product?.imagen ?? "")
+  const [selectedCats, setSelectedCats] = useState<string[]>(parseCategorias(product?.categoria))
+  const [catError, setCatError] = useState(false)
 
   useEffect(() => {
     fetch("/api/categories")
@@ -41,11 +45,14 @@ export function ProductForm({ product }: ProductFormProps) {
       .then((data: Category[]) => setCategories(data))
   }, [])
 
-  const groups = categories.filter((c) => c.grupo === null)
-  const getSubcats = (groupSlug: string) => categories.filter((c) => c.grupo === groupSlug)
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (selectedCats.length === 0) {
+      setCatError(true)
+      return
+    }
+    setCatError(false)
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
@@ -57,19 +64,21 @@ export function ProductForm({ product }: ProductFormProps) {
         ? parseInt(formData.get("precioOriginal") as string)
         : null,
       imagen,
-      categoria: formData.get("categoria"),
+      categorias: selectedCats,
       badge: formData.get("badge") || null,
       descripcion: formData.get("descripcion"),
     }
 
-    await fetch("/api/products", {
+    const res = await fetch("/api/products", {
       method: product ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     })
 
-    router.push("/admin/products")
-    router.refresh()
+    if (res.ok) {
+      router.push("/admin/products")
+      router.refresh()
+    }
     setLoading(false)
   }
 
@@ -96,32 +105,26 @@ export function ProductForm({ product }: ProductFormProps) {
         <ImageUpload value={imagen} onChange={setImagen} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="categoria">Categoría</Label>
-          <select
-            id="categoria"
-            name="categoria"
-            defaultValue={product?.categoria ?? ""}
-            required
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="">Seleccionar categoría...</option>
-            {groups.map((group) => (
-              <optgroup key={group.slug} label={`${group.icono} ${group.nombre}`}>
-                {getSubcats(group.slug).map((sub) => (
-                  <option key={sub.slug} value={sub.slug}>
-                    {sub.nombre}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="badge">Badge (opcional)</Label>
-          <Input id="badge" name="badge" defaultValue={product?.badge ?? ""} />
-        </div>
+      <div className="space-y-2">
+        <Label>
+          Categorías <span className="text-red-500">*</span>
+        </Label>
+        <CategoriesMultiselect
+          value={selectedCats}
+          onChange={(next) => {
+            setSelectedCats(next)
+            if (next.length > 0) setCatError(false)
+          }}
+          categories={categories}
+        />
+        {catError && (
+          <p className="text-xs text-red-600">Selecciona al menos una categoría.</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="badge">Badge (opcional)</Label>
+        <Input id="badge" name="badge" defaultValue={product?.badge ?? ""} />
       </div>
 
       <div className="space-y-2">

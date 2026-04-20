@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Pencil, Trash2, X, Search, Loader2, AlertTriangle, CheckCircle2, Package } from "lucide-react"
+import { Plus, Pencil, Trash2, X, Search, Loader2, AlertTriangle, CheckCircle2, Package, Star } from "lucide-react"
 import { ImageUpload } from "@/components/admin/image-upload"
+import { CategoriesMultiselect } from "@/components/admin/categories-multiselect"
+import { parseCategorias, serializeCategorias } from "@/lib/products"
 
 interface Product {
   id: number
@@ -16,6 +18,7 @@ interface Product {
   precioOriginal?: number | null
   imagen: string
   categoria: string
+  categorias: string[]
   badge?: string | null
   descripcion: string
 }
@@ -62,7 +65,14 @@ export default function ProductsPage() {
         fetch("/api/products"),
         fetch("/api/categories"),
       ])
-      setProducts(await pRes.json())
+      const pData: Product[] = await pRes.json()
+      // Garantizar campo categorias derivado (por si la API antigua no lo trae)
+      setProducts(
+        pData.map((p) => ({
+          ...p,
+          categorias: Array.isArray(p.categorias) ? p.categorias : parseCategorias(p.categoria),
+        }))
+      )
       setCategories(await cRes.json())
     } catch {
       showToast("Error al cargar datos", "error")
@@ -73,8 +83,6 @@ export default function ProductsPage() {
 
   useEffect(() => { load() }, [load])
 
-  const groups = categories.filter((c) => c.grupo === null)
-  const getSubcats = (slug: string) => categories.filter((c) => c.grupo === slug)
   const getCatName = (slug: string) => categories.find((c) => c.slug === slug)?.nombre ?? slug
 
   const filtered = products.filter((p) =>
@@ -104,12 +112,12 @@ export default function ProductsPage() {
   const someSelected = selected.size > 0
 
   const openNew = () => {
-    setEditing({ id: 0, nombre: "", precio: 0, imagen: "/placeholder.jpg", categoria: "", descripcion: "" })
+    setEditing({ id: 0, nombre: "", precio: 0, imagen: "/placeholder.jpg", categoria: "", categorias: [], descripcion: "" })
     setIsNew(true)
   }
 
   const openEdit = (p: Product) => {
-    setEditing({ ...p })
+    setEditing({ ...p, categorias: p.categorias.length > 0 ? p.categorias : parseCategorias(p.categoria) })
     setIsNew(false)
   }
 
@@ -117,12 +125,21 @@ export default function ProductsPage() {
 
   const save = async () => {
     if (!editing) return
+    if (editing.categorias.length === 0) {
+      showToast("Selecciona al menos una categoría", "error")
+      return
+    }
     setSaving(true)
     try {
+      const body = {
+        ...editing,
+        categoria: serializeCategorias(editing.categorias),
+        categorias: editing.categorias,
+      }
       const res = await fetch("/api/products", {
         method: isNew ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editing),
+        body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
       showToast(isNew ? "Producto creado" : "Producto actualizado")
@@ -186,6 +203,26 @@ export default function ProductsPage() {
       <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-12 ml-auto" /></td>
     </tr>
   )
+
+  const renderCategoriasBadges = (cats: string[]) => {
+    if (cats.length === 0) {
+      return <span className="text-xs text-gray-400 italic">Sin categoría</span>
+    }
+    return (
+      <div className="flex flex-wrap gap-1">
+        {cats.map((slug, i) => (
+          <Badge
+            key={slug}
+            variant={i === 0 ? "default" : "secondary"}
+            className="text-[10px] px-1.5 py-0 gap-0.5"
+          >
+            {i === 0 && <Star className="h-2.5 w-2.5 fill-current" />}
+            {getCatName(slug)}
+          </Badge>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -278,7 +315,7 @@ export default function ProductsPage() {
               </th>
               <th className="px-4 py-2.5">Producto</th>
               <th className="px-4 py-2.5 w-28">Precio</th>
-              <th className="px-4 py-2.5 w-40 hidden md:table-cell">Categoría</th>
+              <th className="px-4 py-2.5 w-56 hidden md:table-cell">Categorías</th>
               <th className="px-4 py-2.5 w-24 hidden sm:table-cell">Badge</th>
               <th className="px-4 py-2.5 w-20 text-right">Acc.</th>
             </tr>
@@ -322,7 +359,7 @@ export default function ProductsPage() {
                   </td>
                   <td className="px-4 py-2.5">
                     <p className="font-medium text-gray-900 truncate max-w-xs">{p.nombre}</p>
-                    <p className="text-xs text-gray-400 truncate max-w-xs md:hidden">{getCatName(p.categoria)}</p>
+                    <div className="md:hidden mt-1">{renderCategoriasBadges(p.categorias)}</div>
                   </td>
                   <td className="px-4 py-2.5">
                     <span className="font-semibold text-gray-900">{fmt(p.precio)}</span>
@@ -331,7 +368,7 @@ export default function ProductsPage() {
                     )}
                   </td>
                   <td className="px-4 py-2.5 hidden md:table-cell">
-                    <span className="text-gray-600 text-xs">{getCatName(p.categoria)}</span>
+                    {renderCategoriasBadges(p.categorias)}
                   </td>
                   <td className="px-4 py-2.5 hidden sm:table-cell">
                     {p.badge && <Badge variant="secondary" className="text-xs">{p.badge}</Badge>}
@@ -380,28 +417,19 @@ export default function ProductsPage() {
                   <Input type="number" value={editing.precioOriginal ?? ""} onChange={(e) => setEditing({ ...editing, precioOriginal: e.target.value ? parseInt(e.target.value) : null })} className="h-9" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Categoría</Label>
-                  <select
-                    value={editing.categoria}
-                    onChange={(e) => setEditing({ ...editing, categoria: e.target.value })}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    <option value="">Seleccionar...</option>
-                    {groups.map((g) => (
-                      <optgroup key={g.slug} label={`${g.icono} ${g.nombre}`}>
-                        {getSubcats(g.slug).map((s) => (
-                          <option key={s.slug} value={s.slug}>{s.nombre}</option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label className="text-xs">Badge</Label>
-                  <Input value={editing.badge ?? ""} onChange={(e) => setEditing({ ...editing, badge: e.target.value || null })} className="h-9" placeholder="Ej: Más Vendido" />
-                </div>
+              <div>
+                <Label className="text-xs">
+                  Categorías <span className="text-red-500">*</span>
+                </Label>
+                <CategoriesMultiselect
+                  value={editing.categorias}
+                  onChange={(next) => setEditing({ ...editing, categorias: next })}
+                  categories={categories}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Badge</Label>
+                <Input value={editing.badge ?? ""} onChange={(e) => setEditing({ ...editing, badge: e.target.value || null })} className="h-9" placeholder="Ej: Más Vendido" />
               </div>
               <div>
                 <Label className="text-xs">Imagen del producto</Label>
@@ -417,7 +445,7 @@ export default function ProductsPage() {
             </div>
             <div className="flex justify-end gap-2 px-5 py-4 border-t bg-gray-50 rounded-b-xl">
               <Button variant="outline" size="sm" onClick={close} disabled={saving}>Cancelar</Button>
-              <Button size="sm" onClick={save} disabled={saving || !editing.nombre || !editing.categoria}>
+              <Button size="sm" onClick={save} disabled={saving || !editing.nombre || editing.categorias.length === 0}>
                 {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
                 {saving ? "Guardando..." : isNew ? "Crear" : "Guardar"}
               </Button>

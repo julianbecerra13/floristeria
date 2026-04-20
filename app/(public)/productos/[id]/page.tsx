@@ -12,6 +12,7 @@ import { getProductById, getProducts } from "@/lib/data"
 import {
   formatPrice,
   getCategoryEmoji,
+  getCategoryName,
   categoryGroups,
   WHATSAPP_NUMBER,
 } from "@/lib/products"
@@ -26,16 +27,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
 
 interface PageProps {
   params: Promise<{ id: string }>
-}
-
-function getCategoryName(slug: string): string {
-  for (const group of categoryGroups) {
-    if (group.slug === slug) return group.nombre
-    for (const sub of group.subcategorias) {
-      if (sub.slug === slug) return sub.nombre
-    }
-  }
-  return slug
 }
 
 function getCategoryGroup(slug: string): string | null {
@@ -71,24 +62,29 @@ export default async function ProductDetailPage({ params }: PageProps) {
   }
 
   const allProducts = await getProducts()
-  const emoji = getCategoryEmoji(product.categoria)
-  const categoryName = getCategoryName(product.categoria)
-  const productGroup = getCategoryGroup(product.categoria)
+  const primarySlug = product.categorias[0] ?? product.categoria
+  const emoji = getCategoryEmoji(primarySlug)
+  const categoryName = getCategoryName(primarySlug)
+  const productGroup = getCategoryGroup(primarySlug)
+  const productCatSet = new Set(product.categorias)
 
-  // Recommendations: same category first, then same group, exclude current
+  // Recommendations: shared category first, then same group, then others
+  const sharesCategory = (p: typeof product) => p.categorias.some((c) => productCatSet.has(c))
+
   const sameCategory = allProducts.filter(
-    (p) => p.id !== product.id && p.categoria === product.categoria
+    (p) => p.id !== product.id && sharesCategory(p)
   )
   const sameGroup = allProducts.filter(
     (p) =>
       p.id !== product.id &&
-      p.categoria !== product.categoria &&
-      getCategoryGroup(p.categoria) === productGroup
+      !sharesCategory(p) &&
+      getCategoryGroup(p.categorias[0] ?? p.categoria) === productGroup
   )
   const others = allProducts.filter(
     (p) =>
       p.id !== product.id &&
-      getCategoryGroup(p.categoria) !== productGroup
+      !sharesCategory(p) &&
+      getCategoryGroup(p.categorias[0] ?? p.categoria) !== productGroup
   )
   const recommendations = [...sameCategory, ...sameGroup, ...others].slice(0, 4)
 

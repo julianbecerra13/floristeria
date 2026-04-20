@@ -5,6 +5,7 @@ import {
   products as defaultProducts,
   categories as defaultCategories,
   testimonials as defaultTestimonials,
+  parseCategorias,
   type Product,
 } from "./products"
 
@@ -26,6 +27,7 @@ export async function getProductById(id: number): Promise<Product | null> {
       precioOriginal: r.precioOriginal ?? undefined,
       imagen: r.imagen,
       categoria: r.categoria,
+      categorias: parseCategorias(r.categoria),
       badge: r.badge ?? undefined,
       descripcion: r.descripcion,
     }
@@ -48,6 +50,7 @@ export async function getProducts(): Promise<Product[]> {
       precioOriginal: r.precioOriginal ?? undefined,
       imagen: r.imagen,
       categoria: r.categoria,
+      categorias: parseCategorias(r.categoria),
       badge: r.badge ?? undefined,
       descripcion: r.descripcion,
     }))

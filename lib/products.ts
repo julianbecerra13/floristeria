@@ -5,6 +5,7 @@ export interface Product {
   precioOriginal?: number
   imagen: string
   categoria: string
+  categorias: string[]
   badge?: string
   descripcion: string
 }
@@ -18,6 +19,15 @@ export interface CategoryGroup {
 
 export const WHATSAPP_NUMBER = "573157630286"
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hola, me interesa un arreglo floral")}`
+
+export function parseCategorias(raw: string | null | undefined): string[] {
+  if (!raw) return []
+  return raw.split(",").map((s) => s.trim()).filter(Boolean)
+}
+
+export function serializeCategorias(arr: string[]): string {
+  return arr.map((s) => s.trim()).filter(Boolean).join(",")
+}
 
 export const categoryGroups: CategoryGroup[] = [
   {
@@ -94,7 +104,7 @@ export const categories = categoryGroups.flatMap((group, gi) => [
   })),
 ])
 
-export const products: Product[] = [
+const rawProducts: Omit<Product, "categorias">[] = [
   // Fechas Especiales
   {
     id: 1,
@@ -242,6 +252,11 @@ export const products: Product[] = [
   },
 ]
 
+export const products: Product[] = rawProducts.map((p) => ({
+  ...p,
+  categorias: parseCategorias(p.categoria),
+}))
+
 export const testimonials = [
   {
     id: 1,
@@ -273,11 +288,23 @@ export function formatPrice(precio: number): string {
 }
 
 export function getCategoryEmoji(categoria: string): string {
+  const primary = parseCategorias(categoria)[0] ?? categoria
   for (const group of categoryGroups) {
-    if (group.slug === categoria) return group.icono
+    if (group.slug === primary) return group.icono
     for (const sub of group.subcategorias) {
-      if (sub.slug === categoria) return group.icono
+      if (sub.slug === primary) return group.icono
     }
   }
   return "💐"
+}
+
+export function getCategoryName(slug: string): string {
+  const primary = parseCategorias(slug)[0] ?? slug
+  for (const group of categoryGroups) {
+    if (group.slug === primary) return group.nombre
+    for (const sub of group.subcategorias) {
+      if (sub.slug === primary) return sub.nombre
+    }
+  }
+  return primary
 }

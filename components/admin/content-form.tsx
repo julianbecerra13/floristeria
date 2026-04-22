@@ -194,7 +194,7 @@ export function ContentForm() {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Badge</Label>
-            <Input value={heroBadge} onChange={(e) => setHeroBadge(e.target.value)} placeholder="Ej: Envío gratis en Bogotá" className="h-9" />
+            <Input value={heroBadge} onChange={(e) => setHeroBadge(e.target.value)} placeholder="Ej: Envíos a toda el área metropolitana de Santander" className="h-9" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Título</Label>

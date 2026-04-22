@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from "react"
 import { Menu, MessageCircle, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
-import { categoryGroups, WHATSAPP_URL } from "@/lib/products"
+import { WHATSAPP_URL, type CategoryGroup } from "@/lib/products"
 
-export function Header() {
+export function Header({ categoryGroups }: { categoryGroups: CategoryGroup[] }) {
   const [catOpen, setCatOpen] = useState(false)
   const [mobileCatOpen, setMobileCatOpen] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -43,33 +43,41 @@ export function Header() {
               </a>
 
               {/* Mobile categories */}
-              <div className="border-t pt-2">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Categorías</span>
-                {categoryGroups.map((group) => (
-                  <div key={group.slug} className="mt-2">
-                    <button
-                      onClick={() => setMobileCatOpen(mobileCatOpen === group.slug ? null : group.slug)}
-                      className="flex items-center justify-between w-full text-left text-base font-medium text-gray-700 hover:text-pink-600 transition-colors py-1.5"
-                    >
-                      <span>{group.icono} {group.nombre}</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${mobileCatOpen === group.slug ? "rotate-180" : ""}`} />
-                    </button>
-                    {mobileCatOpen === group.slug && (
-                      <div className="ml-6 flex flex-col gap-1 mt-1">
-                        {group.subcategorias.map((sub) => (
+              {categoryGroups.length > 0 && (
+                <div className="border-t pt-2">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Categorías</span>
+                  {categoryGroups.map((group) => (
+                    <div key={group.slug} className="mt-2">
+                      <button
+                        onClick={() => setMobileCatOpen(mobileCatOpen === group.slug ? null : group.slug)}
+                        className="flex items-center justify-between w-full text-left text-base font-medium text-gray-700 hover:text-pink-600 transition-colors py-1.5"
+                      >
+                        <span>{group.icono} {group.nombre}</span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${mobileCatOpen === group.slug ? "rotate-180" : ""}`} />
+                      </button>
+                      {mobileCatOpen === group.slug && (
+                        <div className="ml-6 flex flex-col gap-1 mt-1">
                           <a
-                            key={sub.slug}
-                            href="#catalogo"
-                            className="text-sm text-gray-600 hover:text-pink-600 transition-colors py-1"
+                            href={`/categoria/${group.slug}`}
+                            className="text-sm font-medium text-pink-600 hover:text-pink-700 transition-colors py-1"
                           >
-                            {sub.nombre}
+                            Ver todo
                           </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                          {group.subcategorias.map((sub) => (
+                            <a
+                              key={sub.slug}
+                              href={`/categoria/${sub.slug}`}
+                              className="text-sm text-gray-600 hover:text-pink-600 transition-colors py-1"
+                            >
+                              {sub.nombre}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <a
                 href="#contacto"
@@ -97,41 +105,57 @@ export function Header() {
           </a>
 
           {/* Categories dropdown */}
-          <div ref={dropdownRef} className="relative">
-            <button
-              onClick={() => setCatOpen(!catOpen)}
-              className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
-            >
-              Categorías
-              <ChevronDown className={`h-4 w-4 transition-transform ${catOpen ? "rotate-180" : ""}`} />
-            </button>
+          {categoryGroups.length > 0 && (
+            <div ref={dropdownRef} className="relative">
+              <button
+                onClick={() => setCatOpen(!catOpen)}
+                className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
+              >
+                Categorías
+                <ChevronDown className={`h-4 w-4 transition-transform ${catOpen ? "rotate-180" : ""}`} />
+              </button>
 
-            {catOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[700px] bg-white rounded-xl shadow-xl border p-6 grid grid-cols-4 gap-6 z-50">
-                {categoryGroups.map((group) => (
-                  <div key={group.slug}>
-                    <h3 className="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-1.5">
-                      <span>{group.icono}</span>
-                      {group.nombre}
-                    </h3>
-                    <ul className="space-y-1">
-                      {group.subcategorias.map((sub) => (
-                        <li key={sub.slug}>
-                          <a
-                            href="#catalogo"
-                            onClick={() => setCatOpen(false)}
-                            className="text-xs text-gray-600 hover:text-pink-600 transition-colors"
-                          >
-                            {sub.nombre}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+              {catOpen && (
+                <div
+                  className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-xl shadow-xl border p-6 grid gap-6 z-50 ${
+                    categoryGroups.length >= 4
+                      ? "w-[700px] grid-cols-4"
+                      : categoryGroups.length === 3
+                        ? "w-[560px] grid-cols-3"
+                        : categoryGroups.length === 2
+                          ? "w-[400px] grid-cols-2"
+                          : "w-[240px] grid-cols-1"
+                  }`}
+                >
+                  {categoryGroups.map((group) => (
+                    <div key={group.slug}>
+                      <a
+                        href={`/categoria/${group.slug}`}
+                        onClick={() => setCatOpen(false)}
+                        className="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-1.5 hover:text-pink-600 transition-colors"
+                      >
+                        <span>{group.icono}</span>
+                        {group.nombre}
+                      </a>
+                      <ul className="space-y-1 mt-2">
+                        {group.subcategorias.map((sub) => (
+                          <li key={sub.slug}>
+                            <a
+                              href={`/categoria/${sub.slug}`}
+                              onClick={() => setCatOpen(false)}
+                              className="text-xs text-gray-600 hover:text-pink-600 transition-colors"
+                            >
+                              {sub.nombre}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <a
             href="#contacto"

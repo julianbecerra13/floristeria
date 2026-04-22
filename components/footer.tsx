@@ -32,7 +32,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-pink-400" />
-                Lun - Sáb: 7:00 AM - 7:00 PM
+                Lun - Sáb: 9:00 AM - 7:30 PM
               </li>
             </ul>
           </div>

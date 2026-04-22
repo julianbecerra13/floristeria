@@ -6,14 +6,14 @@ import { ProductGrid } from "@/components/product-grid"
 import { BestSellers } from "@/components/best-sellers"
 import { Testimonials } from "@/components/testimonials"
 import { LocationSection } from "@/components/location-section"
-import { getProducts, getTestimonials, getPageContent } from "@/lib/data"
-import { categoryGroups } from "@/lib/products"
+import { getProducts, getTestimonials, getPageContent, getCategoryGroupsWithSubs } from "@/lib/data"
 
 export default async function Home() {
-  const [products, testimonials, heroContent] = await Promise.all([
+  const [products, testimonials, heroContent, categoryGroups] = await Promise.all([
     getProducts(),
     getTestimonials(),
     getPageContent("hero"),
+    getCategoryGroupsWithSubs(),
   ])
 
   return (

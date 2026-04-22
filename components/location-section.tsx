@@ -41,7 +41,7 @@ export function LocationSection() {
               <div>
                 <h3 className="font-semibold text-gray-900 text-sm">Horario</h3>
                 <p className="text-sm text-gray-600 leading-snug mt-0.5">
-                  Lun - Sáb: 7:00 AM - 7:00 PM<br />
+                  Lun - Sáb: 9:00 AM - 7:30 PM<br />
                   Domingos: Cerrado
                 </p>
               </div>

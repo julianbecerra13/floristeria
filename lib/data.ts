@@ -4,9 +4,11 @@ import * as schema from "./schema"
 import {
   products as defaultProducts,
   categories as defaultCategories,
+  categoryGroups as defaultCategoryGroups,
   testimonials as defaultTestimonials,
   parseCategorias,
   type Product,
+  type CategoryGroup,
 } from "./products"
 
 export async function getProductById(id: number): Promise<Product | null> {
@@ -118,6 +120,31 @@ export async function getCategoryGroups() {
         slug: r.slug,
         icono: r.icono,
       }))
+  } catch {
+    return []
+  }
+}
+
+// Grupos completos con sus subcategorías, leídos desde la DB.
+// Fallback a categorías hardcoded solo cuando no hay DATABASE_URL (modo dev sin DB).
+// Si hay DB pero está vacía, devuelve [] para respetar lo que el admin configure.
+export async function getCategoryGroupsWithSubs(): Promise<CategoryGroup[]> {
+  try {
+    const db = getDb()
+    if (!db) return defaultCategoryGroups
+
+    const rows = await db.select().from(schema.categories)
+    if (rows.length === 0) return []
+
+    const groups = rows.filter((r) => r.grupo === null)
+    return groups.map((g) => ({
+      nombre: g.nombre,
+      slug: g.slug,
+      icono: g.icono,
+      subcategorias: rows
+        .filter((r) => r.grupo === g.slug)
+        .map((s) => ({ nombre: s.nombre, slug: s.slug })),
+    }))
   } catch {
     return []
   }

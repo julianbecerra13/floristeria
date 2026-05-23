@@ -3,6 +3,7 @@ import { CheckCircle2, Truck, Sparkles, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WHATSAPP_URL } from "@/lib/products"
+import { optimizeImage } from "@/lib/cloudinary"
 
 interface HeroContent {
   badge?: string
@@ -119,7 +120,7 @@ export function HeroBanner({ content }: { content?: HeroContent | null }) {
       {image && (
         <div className="absolute inset-0">
           <Image
-            src={image}
+            src={optimizeImage(image, 1200)}
             alt=""
             fill
             className="object-cover opacity-10"
@@ -204,7 +205,7 @@ export function HeroBanner({ content }: { content?: HeroContent | null }) {
               {image ? (
                 <div className="relative w-80 h-80 xl:w-96 xl:h-96 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                   <Image
-                    src={image}
+                    src={optimizeImage(image, 800)}
                     alt="Flores Floristería Gardenias"
                     fill
                     className="object-cover"

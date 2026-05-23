@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { CLOUDINARY_UPLOAD_URL, CLOUDINARY_UPLOAD_PRESET } from "@/lib/cloudinary"
+import { CLOUDINARY_UPLOAD_URL, CLOUDINARY_UPLOAD_PRESET, optimizeImage } from "@/lib/cloudinary"
 import { Button } from "@/components/ui/button"
 import { ImagePlus, Loader2, X } from "lucide-react"
 
@@ -75,7 +75,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     <div className="space-y-2">
       {isValidImage ? (
         <div className="relative w-full aspect-square max-w-[200px] rounded-lg overflow-hidden border bg-gray-50">
-          <img src={value} alt="Preview" className="w-full h-full object-cover" />
+          <img src={optimizeImage(value, 400)} alt="Preview" className="w-full h-full object-cover" />
           <button
             type="button"
             onClick={() => onChange("")}

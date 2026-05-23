@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { type Product, formatPrice, getCategoryEmoji, WHATSAPP_NUMBER } from "@/lib/products"
+import { optimizeImage } from "@/lib/cloudinary"
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -40,8 +41,9 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-pink-100 to-rose-50">
         {hasRealImage && !imgError ? (
           <img
-            src={product.imagen}
+            src={optimizeImage(product.imagen, 600)}
             alt={product.nombre}
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={() => setImgError(true)}
           />

@@ -9,6 +9,7 @@ import { ProductCard } from "@/components/product-card"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { Badge } from "@/components/ui/badge"
 import { getProductById, getProducts } from "@/lib/data"
+import { optimizeImage } from "@/lib/cloudinary"
 import {
   formatPrice,
   getCategoryEmoji,
@@ -129,7 +130,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-pink-100 to-rose-50">
             {hasRealImage ? (
               <img
-                src={product.imagen}
+                src={optimizeImage(product.imagen, 900)}
                 alt={product.nombre}
                 className="absolute inset-0 w-full h-full object-cover"
               />

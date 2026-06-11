@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { CLOUDINARY_UPLOAD_URL, CLOUDINARY_UPLOAD_PRESET, optimizeImage } from "@/lib/cloudinary"
+import { optimizeImage } from "@/lib/cloudinary"
 import { Button } from "@/components/ui/button"
 import { ImagePlus, Loader2, X } from "lucide-react"
 
@@ -10,9 +10,35 @@ interface ImageUploadProps {
   onChange: (url: string) => void
 }
 
+// Redimensiona y convierte a WebP en el navegador antes de subir, para que la
+// imagen pese poco (menos almacenamiento/transferencia y carga más rápida).
+async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise<Blob> {
+  const bitmap = await createImageBitmap(file)
+  let { width, height } = bitmap
+
+  if (width > maxDim || height > maxDim) {
+    const scale = Math.min(maxDim / width, maxDim / height)
+    width = Math.round(width * scale)
+    height = Math.round(height * scale)
+  }
+
+  const canvas = document.createElement("canvas")
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext("2d")
+  if (!ctx) throw new Error("No se pudo procesar la imagen")
+  ctx.drawImage(bitmap, 0, 0, width, height)
+  bitmap.close()
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob((b) => resolve(b), "image/webp", quality)
+  )
+  if (!blob) throw new Error("No se pudo comprimir la imagen")
+  return blob
+}
+
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,45 +50,30 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("La imagen no puede pesar más de 5MB")
+    if (file.size > 15 * 1024 * 1024) {
+      alert("La imagen no puede pesar más de 15MB")
       return
     }
 
     setUploading(true)
-    setProgress(0)
-
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
 
     try {
-      const xhr = new XMLHttpRequest()
+      const compressed = await compressImage(file)
 
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          setProgress(Math.round((event.loaded / event.total) * 100))
-        }
-      })
+      const formData = new FormData()
+      formData.append("file", compressed, `${Date.now()}.webp`)
 
-      const url = await new Promise<string>((resolve, reject) => {
-        xhr.open("POST", CLOUDINARY_UPLOAD_URL)
-        xhr.onload = () => {
-          if (xhr.status === 200) {
-            const data = JSON.parse(xhr.responseText)
-            resolve(data.secure_url)
-          } else {
-            reject(new Error("Error al subir imagen"))
-          }
-        }
-        xhr.onerror = () => reject(new Error("Error de red"))
-        xhr.send(formData)
-      })
+      const res = await fetch("/api/upload", { method: "POST", body: formData })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || "Error al subir imagen")
+      }
 
+      const { url } = await res.json()
       onChange(url)
     } catch (error) {
       console.error("Error subiendo imagen:", error)
-      alert("Error al subir la imagen. Verifica tu conexión.")
+      alert("Error al subir la imagen. Intenta de nuevo.")
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ""
@@ -75,6 +86,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     <div className="space-y-2">
       {isValidImage ? (
         <div className="relative w-full aspect-square max-w-[200px] rounded-lg overflow-hidden border bg-gray-50">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={optimizeImage(value, 400)} alt="Preview" className="w-full h-full object-cover" />
           <button
             type="button"
@@ -92,7 +104,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
           {uploading ? (
             <>
               <Loader2 className="h-8 w-8 text-pink-500 animate-spin mb-2" />
-              <span className="text-xs text-gray-500">{progress}%</span>
+              <span className="text-xs text-gray-500">Subiendo...</span>
             </>
           ) : (
             <>
@@ -120,7 +132,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
           disabled={uploading}
         >
           {uploading ? (
-            <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> {progress}%</>
+            <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Subiendo...</>
           ) : (
             <><ImagePlus className="h-3 w-3 mr-1" /> Cambiar imagen</>
           )}
